@@ -1,0 +1,7 @@
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+
+        {/* ── Col 1 (wider): KPI cards → Alerts → Upcoming Deadlines ── */}
+        <div className="lg:col-span-8 flex flex-col gap-3">
+
+          {/* 6 KPI cards — 3×2 grid, now wider */}
+          <div className="grid grid-cols-3 gap-2 items-start">

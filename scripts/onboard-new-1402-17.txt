@@ -1,0 +1,88 @@
+const FY_OPTIONS = ['2025-26', '2024-25', '2023-24']
+
+type CommMode = 'whatsapp' | 'email' | 'portal' | 'internal'
+type ModuleKey = 'gst' | 'tds' | 'audit'
+
+interface ModuleDoc {
+  id: string
+  name: string
+  required: boolean
+}
+
+const COMM_MODES: { id: CommMode; label: string; icon: typeof MessageSquare; desc: string }[] = [
+  { id: 'whatsapp', label: 'WhatsApp', icon: Smartphone, desc: 'Client WhatsApp for reminders & doc requests' },
+  { id: 'email', label: 'Email', icon: Mail, desc: 'Official email communication' },
+  { id: 'portal', label: 'Client Portal', icon: Globe, desc: 'Secure portal uploads & messaging' },
+  { id: 'internal', label: 'In-App Only', icon: MessageSquare, desc: 'Firm team handles all client touchpoints' },
+]
+
+const MODULE_DOC_TEMPLATES: Record<ModuleKey, { name: string; defaultRequired: boolean }[]> = {
+  gst: [
+    { name: 'Sales Invoices / GSTR-1 Data', defaultRequired: true },
+    { name: 'Purchase Register', defaultRequired: true },
+    { name: 'Bank Statement', defaultRequired: true },
+    { name: 'Credit / Debit Notes', defaultRequired: false },
+    { name: 'E-way Bills Summary', defaultRequired: false },
+  ],
+  tds: [
+    { name: 'TDS Deduction Statement', defaultRequired: true },
+    { name: 'Challan Payment Proofs', defaultRequired: true },
+    { name: 'Salary Register (24Q)', defaultRequired: true },
+    { name: 'Vendor Master with PAN', defaultRequired: true },
+    { name: 'Form 16 / 16A Copies', defaultRequired: false },
+  ],
+  audit: [
+    { name: 'Trial Balance', defaultRequired: true },
+    { name: 'Fixed Assets Register', defaultRequired: true },
+    { name: 'Bank Statements (All Accounts)', defaultRequired: true },
+    { name: 'Board Minutes', defaultRequired: true },
+    { name: 'Loan Agreements', defaultRequired: false },
+    { name: 'Inventory Valuation Report', defaultRequired: false },
+  ],
+}
+
+function defaultModuleDocs(module: ModuleKey): ModuleDoc[] {
+  return MODULE_DOC_TEMPLATES[module].map(t => ({
+    id: uid(),
+    name: t.name,
+    required: t.defaultRequired,
+  }))
+}
+
+function buildModuleDocsMap(gst: boolean, tds: boolean, audit: boolean, prev: Partial<Record<ModuleKey, ModuleDoc[]>> = {}) {
+  const next: Partial<Record<ModuleKey, ModuleDoc[]>> = { ...prev }
+  if (gst && !next.gst) next.gst = defaultModuleDocs('gst')
+  if (!gst) delete next.gst
+  if (tds && !next.tds) next.tds = defaultModuleDocs('tds')
+  if (!tds) delete next.tds
+  if (audit && !next.audit) next.audit = defaultModuleDocs('audit')
+  if (!audit) delete next.audit
+  return next as Record<ModuleKey, ModuleDoc[]>
+}
+
+interface SettingsProfile {
+  gstEnabled: boolean
+  tdsEnabled: boolean
+  auditEnabled: boolean
+  assignedAdminId: string
+  assignedArticleId: string
+  financialYear: string
+  clientActive: boolean
+  notifyFilingReminders: boolean
+  notifyDocRequests: boolean
+  notifyNoticeAlerts: boolean
+  clientPortalAccess: boolean
+  primaryCommMode: CommMode
+  commWhatsAppEnabled: boolean
+  commEmailEnabled: boolean
+  commPortalEnabled: boolean
+  commInternalEnabled: boolean
+  whatsappNumber: string
+  whatsappAutoReply: boolean
+  emailPrimary: string
+  emailCc: string
+  emailAutoAck: boolean
+  portalInviteEmail: string
+  commPreferredLanguage: string
+  commBusinessHoursOnly: boolean
+}

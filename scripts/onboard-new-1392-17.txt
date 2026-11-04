@@ -1,0 +1,12 @@
+      if (selectedRegistrations.has('TAN')) {
+        if (!form.tanNumber.trim()) errs.tanNumber = 'TAN number is required'
+        else if (!/^[A-Z]{4}[0-9]{5}[A-Z]$/.test(form.tanNumber.toUpperCase())) errs.tanNumber = 'Invalid TAN format (AAAA99999A)'
+      }
+    }
+
+    if (s === 7) {
+      if (!settingsProfile.assignedAdminId) errs.assignedAdminId = 'Assign an admin to this client'
+      if (!settingsProfile.gstEnabled && !settingsProfile.tdsEnabled && !settingsProfile.auditEnabled) {
+        errs.modules = 'Enable at least one compliance module'
+      }
+    }

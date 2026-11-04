@@ -1,0 +1,29 @@
+              {selectedCat === 'notice' && (
+                <>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>Notice Number</label>
+                    <input value={noticeNo} onChange={e => setNoticeNo(e.target.value)} style={inputBase} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Authority</label>
+                      <input value={authority} onChange={e => setAuthority(e.target.value)} style={inputBase} />
+                    </div>
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Notice Type</label>
+                      <select value={noticeType} onChange={e => setNoticeType(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {NOTICE_TYPES.map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Notes (optional)</label>
+                <textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} placeholder="Additional notes…" style={{ ...inputBase, resize: 'vertical' }} />
+              </div>
+                </>
+              )}
+            </div>
+          )}

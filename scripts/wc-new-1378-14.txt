@@ -1,0 +1,14 @@
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>GSTIN *</label>
+                    <select value={gstin} onChange={e => setGstin(e.target.value)} className="appearance-none" style={inputBase}>
+                      <option value="">Select GSTIN…</option>
+                      {(selectedClient?.gstRegistrations ?? []).map(r => (
+                        <option key={r.gstin} value={r.gstin}>{r.gstin} ({r.filingFrequency})</option>
+                      ))}
+                    </select>
+                    {selectedGstReg && (
+                      <p className="text-[10px] mt-1" style={{ color: G.muted }}>
+                        Onboarding due days — GSTR-1: {selectedGstReg.gstr1Due}th · GSTR-3B: {selectedGstReg.gstr3bDue}th · GSTR-9/9C: {selectedGstReg.gstr9Due} Dec
+                      </p>
+                    )}
+                  </div>

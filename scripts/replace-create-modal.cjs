@@ -1,0 +1,15 @@
+const fs = require('fs')
+const p = require('path').join(__dirname, '..', 'src', 'features', 'workcenter', 'WorkCenterPage.tsx')
+const wc = fs.readFileSync(require('path').join(__dirname, 'wc-1156-new.txt'), 'utf8')
+  .replace(/G\.accent/g, "'#0584C7'")
+  .replace(/G\.muted/g, 'G.icon')
+let c = fs.readFileSync(p, 'utf8')
+const start = c.indexOf('function CreateModal({ onClose, onSubmit }')
+const end = c.indexOf('\n// ─── Ops Panel', start)
+if (start < 0 || end < 0) {
+  console.error('markers not found', start, end)
+  process.exit(1)
+}
+c = c.slice(0, start) + wc + '\n\n' + c.slice(end + 1)
+fs.writeFileSync(p, c)
+console.log('CreateModal replaced, new size', c.length)

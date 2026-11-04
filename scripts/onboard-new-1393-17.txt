@@ -1,0 +1,196 @@
+      </div>
+    )
+  }
+
+  function renderStep7() {
+    const enabledModules = [
+      settingsProfile.gstEnabled && 'GST',
+      settingsProfile.tdsEnabled && 'TDS',
+      settingsProfile.auditEnabled && 'Audit',
+    ].filter(Boolean) as string[]
+
+    const selectedRegLabels = REGISTRATIONS
+      .filter(r => selectedRegistrations.has(r.id))
+      .map(r => r.label)
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <CardBox>
+          <SectionTitle>Compliance Modules</SectionTitle>
+          <p style={{ fontSize: 12, color: G.muted, margin: '0 0 12px' }}>
+            Enable modules for this client. GST and TDS are pre-selected based on registrations from the previous step.
+          </p>
+          <ToggleSwitch
+            label="GST Filing"
+            on={settingsProfile.gstEnabled}
+            onChange={v => patchSettings({ gstEnabled: v })}
+          />
+          <ToggleSwitch
+            label="TDS Filing"
+            on={settingsProfile.tdsEnabled}
+            onChange={v => patchSettings({ tdsEnabled: v })}
+          />
+          <ToggleSwitch
+            label="Statutory Audit"
+            on={settingsProfile.auditEnabled}
+            onChange={v => patchSettings({ auditEnabled: v })}
+          />
+          <FieldError msg={errors.modules} />
+        </CardBox>
+
+        <CardBox>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Users size={16} color={G.accent} />
+            <SectionTitle>Team Assignment</SectionTitle>
+          </div>
+          <Grid2>
+            <div>
+              <Label required>Assigned Admin (CA)</Label>
+              <select
+                value={settingsProfile.assignedAdminId}
+                onChange={e => patchSettings({ assignedAdminId: e.target.value })}
+                style={{
+                  width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 8,
+                  border: `1px solid ${G.border}`, fontSize: 14, color: G.primary, background: G.white,
+                  outline: 'none', fontFamily: 'Inter, sans-serif', cursor: 'pointer',
+                }}
+              >
+                <option value="">Select admin…</option>
+                {adminUsers.map(u => (
+                  <option key={u.id} value={String(u.id)}>{u.full_name}</option>
+                ))}
+              </select>
+              <FieldError msg={errors.assignedAdminId} />
+            </div>
+            <div>
+              <Label>Assigned Article</Label>
+              <select
+                value={settingsProfile.assignedArticleId}
+                onChange={e => patchSettings({ assignedArticleId: e.target.value })}
+                style={{
+                  width: '100%', boxSizing: 'border-box', padding: '8px 12px', borderRadius: 8,
+                  border: `1px solid ${G.border}`, fontSize: 14, color: G.primary, background: G.white,
+                  outline: 'none', fontFamily: 'Inter, sans-serif', cursor: 'pointer',
+                }}
+              >
+                <option value="">Select article (optional)…</option>
+                {articleUsers.map(u => (
+                  <option key={u.id} value={String(u.id)}>{u.full_name}</option>
+                ))}
+              </select>
+            </div>
+          </Grid2>
+        </CardBox>
+
+        <CardBox>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Settings size={16} color={G.accent} />
+            <SectionTitle>Client Settings</SectionTitle>
+          </div>
+          <Grid2>
+            <div>
+              <Label>Financial Year</Label>
+              <Select
+                value={settingsProfile.financialYear}
+                onChange={v => patchSettings({ financialYear: v })}
+                options={FY_OPTIONS}
+                placeholder="Select FY"
+              />
+            </div>
+            <div>
+              <Label>Client Status</Label>
+              <Select
+                value={settingsProfile.clientActive ? 'Active' : 'Inactive'}
+                onChange={v => patchSettings({ clientActive: v === 'Active' })}
+                options={['Active', 'Inactive']}
+              />
+            </div>
+          </Grid2>
+          <div style={{ marginTop: 8 }}>
+            <ToggleSwitch
+              label="Enable client portal access"
+              on={settingsProfile.clientPortalAccess}
+              onChange={v => patchSettings({ clientPortalAccess: v })}
+            />
+          </div>
+        </CardBox>
+
+        <CardBox>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Bell size={16} color={G.accent} />
+            <SectionTitle>Notification Preferences</SectionTitle>
+          </div>
+          <ToggleSwitch
+            label="Filing due date reminders"
+            on={settingsProfile.notifyFilingReminders}
+            onChange={v => patchSettings({ notifyFilingReminders: v })}
+          />
+          <ToggleSwitch
+            label="Document request alerts"
+            on={settingsProfile.notifyDocRequests}
+            onChange={v => patchSettings({ notifyDocRequests: v })}
+          />
+          <ToggleSwitch
+            label="Government notice alerts"
+            on={settingsProfile.notifyNoticeAlerts}
+            onChange={v => patchSettings({ notifyNoticeAlerts: v })}
+          />
+        </CardBox>
+
+        <CardBox>
+          <SectionTitle>Onboarding Summary</SectionTitle>
+          <p style={{ fontSize: 12, color: G.muted, margin: '0 0 16px' }}>
+            Review the client profile before submitting.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
+            {[
+              { k: 'Client Name', v: form.clientName || '—' },
+              { k: 'Organization Type', v: form.orgType || '—' },
+              { k: 'PAN', v: form.panNumber || '—' },
+              { k: 'Primary Contact', v: form.pc_name || form.primaryContactName || '—' },
+              { k: 'Location', v: [form.city, form.state].filter(Boolean).join(', ') || '—' },
+              { k: 'Financial Year', v: settingsProfile.financialYear },
+              { k: 'Registrations', v: selectedRegLabels.length ? selectedRegLabels.join(', ') : 'None selected' },
+              { k: 'Modules Enabled', v: enabledModules.length ? enabledModules.join(', ') : 'None' },
+              {
+                k: 'Assigned Team',
+                v: [
+                  adminUsers.find(u => String(u.id) === settingsProfile.assignedAdminId)?.full_name,
+                  articleUsers.find(u => String(u.id) === settingsProfile.assignedArticleId)?.full_name,
+                ].filter(Boolean).join(' · ') || '—',
+              },
+              { k: 'Status', v: settingsProfile.clientActive ? 'Active' : 'Inactive' },
+            ].map(row => (
+              <div key={row.k}>
+                <p style={{ fontSize: 10, fontWeight: 600, color: G.muted, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px' }}>{row.k}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: G.primary, margin: 0 }}>{row.v}</p>
+              </div>
+            ))}
+          </div>
+          {selectedRegistrations.has('GST') && gstEntries.some(g => g.gstin) && (
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${G.border}` }}>
+              <p style={{ fontSize: 10, fontWeight: 600, color: G.muted, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>GST Filing Due Days</p>
+              {gstEntries.filter(g => g.gstin).map(g => (
+                <p key={g.id} style={{ fontSize: 12, color: G.secondary, margin: '0 0 4px' }}>
+                  {g.gstin}: GSTR-1 → {g.gstr1Due || '—'}th · GSTR-3B → {g.gstr3bDue || '—'}th · GSTR-9/9C → {g.gstr9Due || '31'} Dec
+                </p>
+              ))}
+            </div>
+          )}
+        </CardBox>
+      </div>
+    )
+  }
+
+  function renderCurrentStep() {
+    switch (step) {
+      case 1: return renderStep1()
+      case 2: return renderStep2()
+      case 3: return renderStep3()
+      case 4: return renderStep4()
+      case 5: return renderStep5()
+      case 6: return renderStep6()
+      case 7: return renderStep7()
+      default: return null
+    }
+  }

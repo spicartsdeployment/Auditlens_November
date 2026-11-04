@@ -1,0 +1,24 @@
+  function handleAuditTypeChange(t: string) {
+    const tIsTax = t === 'Tax Audit' || t === 'Tax Audit (u/s 44AB)'
+    const newStages = tIsTax ? TAX_AUDIT_STAGES : STATUTORY_STAGES
+    setAuditType(t)
+    setActiveStage(newStages[0].id)
+    setVisibleStages(new Set(newStages.map(s => s.id)))
+  }
+
+  function selectAuditType(t: string) {
+    handleAuditTypeChange(t)
+    const matching = ENGAGEMENTS.find(e =>
+      e.type === t || (t === 'Tax Audit (u/s 44AB)' && e.type === 'Tax Audit')
+    )
+    if (matching) setSelectedId(matching.id)
+    setHasSelectedType(true)
+    setShowTypeSettings(false)
+  }
+
+  function backToAuditTypes() {
+    setHasSelectedType(false)
+    setShowTypeSettings(false)
+    setShowTabSettings(false)
+    setShowEngSearch(false)
+  }

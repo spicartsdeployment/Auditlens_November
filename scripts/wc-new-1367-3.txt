@@ -1,0 +1,120 @@
+          {/* Step 1 — Company dropdown */}
+          {step === 1 && (
+            <div className="space-y-3">
+              <p className="text-xs" style={{ color: G.secondary }}>
+                Select the company this task belongs to. Enabled modules will be shown in the next step.
+              </p>
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Company *</label>
+                <select
+                  value={clientId}
+                  onChange={e => handleClientChange(e.target.value)}
+                  className="appearance-none"
+                  style={inputBase}
+                >
+                  <option value="">Select company…</option>
+                  {MOCK_CLIENTS.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                  <option value="others">Others</option>
+                </select>
+              </div>
+
+              {isOthersCompany && (
+                <div>
+                  <label className={labelCls} style={{ color: G.icon }}>Company Name *</label>
+                  <input
+                    value={otherCompanyName}
+                    onChange={e => setOtherCompanyName(e.target.value)}
+                    placeholder="Enter company or client name…"
+                    style={inputBase}
+                  />
+                </div>
+              )}
+
+              {selectedClient && (
+                <div className="rounded-xl px-3 py-2.5" style={{ background: G.canvas, border: `1px solid ${G.border}` }}>
+                  <p className="text-[10px] font-semibold mb-1.5" style={{ color: G.muted }}>Enabled modules</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedClient.gst_enabled && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#EFF6FF', color: '#2563EB' }}>GST</span>
+                    )}
+                    {selectedClient.tds_enabled && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#FFFBEB', color: '#D97706' }}>TDS</span>
+                    )}
+                    {selectedClient.audit_enabled && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#F0FDF4', color: '#16A34A' }}>Audit</span>
+                    )}
+                    {!selectedClient.gst_enabled && !selectedClient.tds_enabled && !selectedClient.audit_enabled && (
+                      <span className="text-[10px]" style={{ color: G.muted }}>No modules enabled</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2 — Module selection (eligible + Others) */}
+          {step === 2 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: G.canvas, border: `1px solid ${G.border}` }}>
+                <span className="text-[10px] font-semibold" style={{ color: G.muted }}>Company</span>
+                <span className="text-xs font-bold" style={{ color: G.primary }}>{client}</span>
+              </div>
+              <p className="text-xs" style={{ color: G.secondary }}>
+                {isOthersCompany
+                  ? 'Choose a module for this task, or select Others for a custom task.'
+                  : 'Modules enabled for this company. Select Others for a custom task outside standard modules.'}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {eligibleModules.map(cat => {
+                  const Icon = cat.icon
+                  const active = selectedCat === cat.id
+                  return (
+                    <button key={cat.id} onClick={() => setSelectedCat(cat.id as SelectableModule)}
+                      className="flex items-start gap-3 rounded-xl p-3 text-left transition-all"
+                      style={{
+                        background: active ? cat.color + '12' : G.canvas,
+                        border: `1.5px solid ${active ? cat.color : G.border}`,
+                      }}>
+                      <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: cat.color + '18' }}>
+                        <Icon className="h-4 w-4" style={{ color: cat.color }} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold" style={{ color: active ? cat.color : G.primary }}>{cat.label}</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: G.icon }}>{cat.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+                {(() => {
+                  const cat = OTHERS_MODULE
+                  const Icon = cat.icon
+                  const active = selectedCat === 'others'
+                  return (
+                    <button onClick={() => setSelectedCat('others')}
+                      className="flex items-start gap-3 rounded-xl p-3 text-left transition-all"
+                      style={{
+                        background: active ? cat.color + '12' : G.canvas,
+                        border: `1.5px solid ${active ? cat.color : G.border}`,
+                      }}>
+                      <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: cat.color + '18' }}>
+                        <Icon className="h-4 w-4" style={{ color: cat.color }} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold" style={{ color: active ? cat.color : G.primary }}>{cat.label}</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: G.icon }}>{cat.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })()}
+              </div>
+              {!isOthersCompany && eligibleModules.length === 0 && (
+                <p className="text-xs px-3 py-2 rounded-xl" style={{ background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A' }}>
+                  No modules are enabled for this company. Use Others to create a custom task.
+                </p>
+              )}
+            </div>
+          )}

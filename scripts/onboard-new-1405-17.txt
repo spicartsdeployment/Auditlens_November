@@ -1,0 +1,261 @@
+  function renderStep7() {
+    const enabledModules = [
+      settingsProfile.gstEnabled && 'GST',
+      settingsProfile.tdsEnabled && 'TDS',
+      settingsProfile.auditEnabled && 'Audit',
+    ].filter(Boolean) as string[]
+
+    const moduleKeys: { key: ModuleKey; label: string; enabled: boolean }[] = [
+      { key: 'gst', label: 'GST Filing', enabled: settingsProfile.gstEnabled },
+      { key: 'tds', label: 'TDS Filing', enabled: settingsProfile.tdsEnabled },
+      { key: 'audit', label: 'Statutory Audit', enabled: settingsProfile.auditEnabled },
+    ]
+
+    const totalRequiredDocs = moduleKeys
+      .filter(m => m.enabled)
+      .flatMap(m => moduleDocs[m.key] ?? [])
+      .filter(d => d.required).length
+
+    const selectedRegLabels = REGISTRATIONS
+      .filter(r => selectedRegistrations.has(r.id))
+      .map(r => r.label)
+
+    const primaryCommLabel = COMM_MODES.find(c => c.id === settingsProfile.primaryCommMode)?.label ?? '—'
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <CardBox>
+          <SectionTitle>Compliance Modules</SectionTitle>
+          <p style={{ fontSize: 12, color: G.muted, margin: '0 0 12px' }}>
+            Enable modules for this client. GST and TDS are pre-selected based on registrations from the previous step.
+          </p>
+          <ToggleSwitch
+            label="GST Filing"
+            on={settingsProfile.gstEnabled}
+            onChange={v => handleModuleToggle('gstEnabled', v)}
+          />
+          <ToggleSwitch
+            label="TDS Filing"
+            on={settingsProfile.tdsEnabled}
+            onChange={v => handleModuleToggle('tdsEnabled', v)}
+          />
+          <ToggleSwitch
+            label="Statutory Audit"
+            on={settingsProfile.auditEnabled}
+            onChange={v => handleModuleToggle('auditEnabled', v)}
+          />
+          <FieldError msg={errors.modules} />
+        </CardBox>
+
+        {/* Required documents per enabled module */}
+        {moduleKeys.some(m => m.enabled) && (
+          <CardBox>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <FolderOpen size={16} color={G.accent} />
+              <SectionTitle>Required Documents</SectionTitle>
+            </div>
+            <p style={{ fontSize: 12, color: G.muted, margin: '0 0 16px' }}>
+              Configure documents to collect for each enabled module. Mark as required or optional.
+            </p>
+            {moduleKeys.filter(m => m.enabled).map(({ key, label }) => (
+              <div key={key} style={{ marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${G.border}` }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: G.primary, margin: '0 0 10px' }}>{label}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {(moduleDocs[key] ?? []).map(doc => (
+                    <div key={doc.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
+                      borderRadius: 8, background: G.canvas, border: `1px solid ${G.border}`,
+                    }}>
+                      <button
+                        type="button"
+                        onClick={() => toggleDocRequired(key, doc.id)}
+                        style={{
+                          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                          background: doc.required ? '#DCFCE7' : '#F1F5F9',
+                          color: doc.required ? '#15803D' : G.secondary,
+                        }}
+                      >
+                        {doc.required ? 'Required' : 'Optional'}
+                      </button>
+                      <span style={{ flex: 1, fontSize: 13, color: G.primary }}>{doc.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeModuleDoc(key, doc.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.muted, padding: 0 }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <Input
+                    value={newDocDraft[key] ?? ''}
+                    onChange={v => setNewDocDraft(prev => ({ ...prev, [key]: v }))}
+                    placeholder="Add custom document…"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addModuleDoc(key, newDocDraft[key] ?? '')
+                      setNewDocDraft(prev => ({ ...prev, [key]: '' }))
+                    }}
+                    style={{
+                      flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '8px 14px', borderRadius: 8, border: `1px solid ${G.accent}`,
+                      background: G.white, color: G.accent, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    }}
+                  >
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+              </div>
+            ))}
+          </CardBox>
+        )}
+
+        <CardBox>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <MessageSquare size={16} color={G.accent} />
+            <SectionTitle>Communication Mode</SectionTitle>
+          </div>
+          <p style={{ fontSize: 12, color: G.muted, margin: '0 0 12px' }}>
+            Choose how your firm communicates with this client for reminders, document requests, and notices.
+          </p>
+
+          <Label>Primary Communication Mode</Label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            {COMM_MODES.map(mode => (
+              <CommModePill
+                key={mode.id}
+                active={settingsProfile.primaryCommMode === mode.id}
+                onClick={() => patchSettings({ primaryCommMode: mode.id })}
+                label={mode.label}
+                icon={mode.icon}
+              />
+            ))}
+          </div>
+          <FieldError msg={errors.commMode} />
+
+          <p style={{ fontSize: 11, fontWeight: 600, color: G.muted, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>
+            Enabled Channels
+          </p>
+          <ToggleSwitch
+            label="WhatsApp"
+            on={settingsProfile.commWhatsAppEnabled}
+            onChange={v => patchSettings({ commWhatsAppEnabled: v })}
+          />
+          <ToggleSwitch
+            label="Email"
+            on={settingsProfile.commEmailEnabled}
+            onChange={v => patchSettings({ commEmailEnabled: v })}
+          />
+          <ToggleSwitch
+            label="Client Portal"
+            on={settingsProfile.commPortalEnabled}
+            onChange={v => patchSettings({ commPortalEnabled: v, clientPortalAccess: v || settingsProfile.clientPortalAccess })}
+          />
+          <ToggleSwitch
+            label="In-App (team managed)"
+            on={settingsProfile.commInternalEnabled}
+            onChange={v => patchSettings({ commInternalEnabled: v })}
+          />
+
+          {settingsProfile.commWhatsAppEnabled && (
+            <div style={{ marginTop: 12, padding: 16, borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#15803D', margin: '0 0 12px' }}>WhatsApp Settings</p>
+              <Grid2>
+                <div>
+                  <Label required>WhatsApp Number</Label>
+                  <Input
+                    value={settingsProfile.whatsappNumber}
+                    onChange={v => patchSettings({ whatsappNumber: v })}
+                    placeholder="10-digit mobile"
+                    maxLength={10}
+                  />
+                  <FieldError msg={errors.whatsappNumber} />
+                </div>
+                <div>
+                  <Label>Preferred Language</Label>
+                  <Select
+                    value={settingsProfile.commPreferredLanguage}
+                    onChange={v => patchSettings({ commPreferredLanguage: v })}
+                    options={['English', 'Hindi', 'Gujarati', 'Marathi', 'Tamil', 'Telugu']}
+                  />
+                </div>
+              </Grid2>
+              <ToggleSwitch
+                label="Send auto-reply for document requests"
+                on={settingsProfile.whatsappAutoReply}
+                onChange={v => patchSettings({ whatsappAutoReply: v })}
+              />
+            </div>
+          )}
+
+          {settingsProfile.commEmailEnabled && (
+            <div style={{ marginTop: 12, padding: 16, borderRadius: 12, background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#1D4ED8', margin: '0 0 12px' }}>Email Settings</p>
+              <Grid2>
+                <div>
+                  <Label required>Primary Email</Label>
+                  <Input
+                    value={settingsProfile.emailPrimary}
+                    onChange={v => patchSettings({ emailPrimary: v })}
+                    placeholder="client@company.com"
+                    type="email"
+                  />
+                  <FieldError msg={errors.emailPrimary} />
+                </div>
+                <div>
+                  <Label>CC Email(s)</Label>
+                  <Input
+                    value={settingsProfile.emailCc}
+                    onChange={v => patchSettings({ emailCc: v })}
+                    placeholder="accounts@company.com"
+                    type="email"
+                  />
+                </div>
+              </Grid2>
+              <ToggleSwitch
+                label="Send acknowledgement on document receipt"
+                on={settingsProfile.emailAutoAck}
+                onChange={v => patchSettings({ emailAutoAck: v })}
+              />
+            </div>
+          )}
+
+          {settingsProfile.commPortalEnabled && (
+            <div style={{ marginTop: 12, padding: 16, borderRadius: 12, background: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#6D28D9', margin: '0 0 12px' }}>Client Portal Settings</p>
+              <div style={{ maxWidth: 360 }}>
+                <Label required>Portal Invite Email</Label>
+                <Input
+                  value={settingsProfile.portalInviteEmail}
+                  onChange={v => patchSettings({ portalInviteEmail: v })}
+                  placeholder="Email to send portal login invite"
+                  type="email"
+                />
+                <FieldError msg={errors.portalInviteEmail} />
+              </div>
+              <ToggleSwitch
+                label="Enable client portal access"
+                on={settingsProfile.clientPortalAccess}
+                onChange={v => patchSettings({ clientPortalAccess: v })}
+              />
+            </div>
+          )}
+
+          <div style={{ marginTop: 12 }}>
+            <ToggleSwitch
+              label="Send communications during business hours only (9 AM – 6 PM)"
+              on={settingsProfile.commBusinessHoursOnly}
+              onChange={v => patchSettings({ commBusinessHoursOnly: v })}
+            />
+          </div>
+        </CardBox>
+
+        <CardBox>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Users size={16} color={G.accent} />
+            <SectionTitle>Team Assignment</SectionTitle>
+          </div>

@@ -1,0 +1,160 @@
+/* ─────────────────────────────────────────────────────────────
+   AuditLens Design Tokens
+   Charcoal · Graphite · Warm White · Muted Emerald
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── MUTED EMERALD — primary actions, active, highlights ─ */
+  --color-primary-50:  #EEF4F2;
+  --color-primary-100: #D8E6E1;
+  --color-primary-200: #B7D0C7;
+  --color-primary-300: #8BB3A6;
+  --color-primary-400: #5E8F80;
+  --color-primary-500: #3D6B5E;
+  --color-primary-600: #32574C;
+  --color-primary-700: #27443B;
+  --color-primary-800: #1E342E;
+  --color-primary-900: #152420;
+
+  /* ── ACCENT (status success green — not brand) ─────────── */
+  --color-accent-50:  #EEF6F1;
+  --color-accent-100: #D5E9DC;
+  --color-accent-500: #2F6B4F;
+  --color-accent-600: #24553E;
+
+  /* ── WARNING (Amber — status only) ─────────────────────── */
+  --color-warning-50:  #F8F1E4;
+  --color-warning-100: #F0E2C4;
+  --color-warning-500: #B45309;
+  --color-warning-600: #92400E;
+
+  /* ── DANGER (Red — status only) ────────────────────────── */
+  --color-danger-50:  #F7EBE9;
+  --color-danger-100: #EDD4D0;
+  --color-danger-500: #B42318;
+  --color-danger-600: #912018;
+
+  /* ── INFO (muted steel blue — status only) ─────────────── */
+  --color-info-50:  #EEF2F5;
+  --color-info-100: #D7E0E8;
+  --color-info-500: #3B6B8C;
+  --color-info-600: #2F5570;
+
+  /* ── GRAPHITE / WARM NEUTRAL SCALE ─────────────────────── */
+  --color-neutral-50:  #F5F2EC;
+  --color-neutral-100: #EFEBE4;
+  --color-neutral-200: #E4DFD6;
+  --color-neutral-300: #D5CFC4;
+  --color-neutral-400: #8A8D91;
+  --color-neutral-500: #6E7176;
+  --color-neutral-600: #5C5F63;
+  --color-neutral-700: #4A4E53;
+  --color-neutral-800: #3A3F44;
+  --color-neutral-900: #2B2F33;
+
+  /* ── SURFACES ──────────────────────────────────────────── */
+  --color-surface:   #FFFFFF;
+  --color-surface-2: #F5F2EC;
+  --color-surface-3: #EFEBE4;
+  --color-bg:        #F5F2EC;
+
+  --color-border:        #E4DFD6;
+  --color-border-subtle: #EFEBE4;
+
+  --color-text-primary:   #2B2F33;
+  --color-text-secondary: #5C5F63;
+  --color-text-muted:     #8A8D91;
+
+  --color-cta-bg:    #3D6B5E;
+  --color-cta-hover: #32574C;
+  --color-cta-text:  #FFFFFF;
+  --color-brand:     #3D6B5E;
+  --color-brand-hover: #32574C;
+  --color-brand-soft:  #EEF4F2;
+  --color-brand-text:  #32574C;
+
+  --color-sidebar:       #2B2F33;
+  --color-sidebar-hover: rgba(255,255,255,0.06);
+  --color-sidebar-text:  #F7F5F2;
+  --color-sidebar-muted: rgba(247,245,242,0.55);
+  --color-sidebar-active:#3D6B5E;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  --space-1: 4px;  --space-2: 8px;   --space-3: 12px;
+  --space-4: 16px; --space-5: 20px;  --space-6: 24px;
+  --space-8: 32px; --space-10: 40px; --space-12: 48px; --space-16: 64px;
+
+  --radius-sm:   4px;
+  --radius:      8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-3xl:  24px;
+  --radius-full: 9999px;
+
+  --shadow-sm:       0 1px 2px 0 rgba(43,47,51,0.04);
+  --shadow-card:     0 1px 2px 0 rgba(43,47,51,0.04);
+  --shadow-md:       0 4px 10px -4px rgba(43,47,51,0.08);
+  --shadow-lg:       0 8px 16px -6px rgba(43,47,51,0.08);
+  --shadow-dropdown: 0 8px 20px -6px rgba(43,47,51,0.12);
+  --shadow-soft:     0 2px 12px -4px rgba(43,47,51,0.06);
+  --shadow-glow:     none;
+  --shadow-sidebar:  none;
+
+  --glass-bg:        rgba(255,255,255,0.92);
+  --glass-bg-strong: rgba(255,255,255,0.98);
+  --glass-border:    rgba(228,223,214,0.90);
+
+  --sidebar-width:   64px;
+  --topbar-height:   48px;
+
+  --transition-fast: 100ms ease;
+  --transition-base: 180ms ease;
+  --transition-slow: 280ms ease;
+}
+
+.dark {
+  --color-surface:   #25282C;
+  --color-surface-2: #2B2F33;
+  --color-surface-3: #32363B;
+  --color-bg:        #1C1E21;
+  --color-border:    #3A3F44;
+  --color-border-subtle: #2B2F33;
+
+  --color-text-primary:   #F4F1EC;
+  --color-text-secondary: #B4B7BB;
+  --color-text-muted:     #8A8D91;
+
+  --color-cta-bg:    #5E8F80;
+  --color-cta-hover: #6EA092;
+  --color-cta-text:  #152420;
+  --color-brand:     #5E8F80;
+  --color-brand-hover: #6EA092;
+  --color-brand-soft:  #24352F;
+  --color-brand-text:  #B7D0C7;
+
+  --color-neutral-50:  #1C1E21;
+  --color-neutral-100: #25282C;
+  --color-neutral-200: #3A3F44;
+  --color-neutral-300: #4A4E53;
+  --color-neutral-400: #6E7176;
+  --color-neutral-500: #8A8D91;
+  --color-neutral-600: #B4B7BB;
+  --color-neutral-700: #D5CFC4;
+  --color-neutral-800: #EFEBE4;
+  --color-neutral-900: #F5F2EC;
+
+  --color-sidebar:       #1C1E21;
+  --color-sidebar-hover: rgba(255,255,255,0.05);
+  --color-sidebar-text:  #F4F1EC;
+  --color-sidebar-muted: rgba(244,241,236,0.50);
+  --color-sidebar-active:#3D6B5E;
+
+  --glass-bg:        rgba(28,30,33,0.88);
+  --glass-bg-strong: rgba(37,40,44,0.96);
+  --glass-border:    rgba(255,255,255,0.06);
+
+  --shadow-card:     0 1px 2px 0 rgba(0,0,0,0.25);
+}

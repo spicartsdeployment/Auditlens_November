@@ -1,0 +1,375 @@
+// GST due date auto-compute: returns YYYY-MM-DD for the standard filing due date
+function gstAutoDueDate(returnType: string, periodMonth: string): string {
+  if (!periodMonth) return ''
+  // periodMonth like "Apr 2026" → parse to date
+  const parsed = new Date(`1 ${periodMonth}`)
+  if (isNaN(parsed.getTime())) return ''
+  const y = parsed.getFullYear()
+  const m = parsed.getMonth() // 0-indexed
+
+  // Rules: due date falls in the FOLLOWING month
+  const nextM = (m + 1) % 12
+  const nextY = m === 11 ? y + 1 : y
+
+  const dayMap: Record<string, number> = {
+    'GSTR-1':   11,
+    'GSTR-1A':  13,
+    'GSTR-3B':  20,
+    'GSTR-2B':  14,
+    'GSTR-9':   31,
+    'GSTR-9C':  31,
+  }
+  // GSTR-9/9C is due 31 Dec of the following year
+  if (returnType === 'GSTR-9' || returnType === 'GSTR-9C') {
+    return `${y + 1}-12-31`
+  }
+  const day = dayMap[returnType] ?? 20
+  const mm = String(nextM + 1).padStart(2, '0')
+  const dd = String(day).padStart(2, '0')
+  return `${nextY}-${mm}-${dd}`
+}
+
+function CreateModal({ onClose, onSubmit }: {
+  onClose: () => void
+  onSubmit: (item: Partial<WorkItem> & { assigned_to: string; client: string; type: WorkType; priority: Priority; due_date: string; queue: 'todo' }) => void
+}) {
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [client, setClient] = useState('')
+  const [selectedCat, setSelectedCat] = useState<WorkType | ''>('')
+  const [assignTo, setAssignTo] = useState('')
+  const [priority, setPriority] = useState<Priority>('medium')
+  const [dueDate, setDueDate] = useState('')
+  const [description, setDescription] = useState('')
+  const [gstin, setGstin] = useState('')
+  const [gstReturnType, setGstReturnType] = useState('')
+  const [month, setMonth] = useState('')
+  const [tdsReturnType, setTdsReturnType] = useState('')
+  const [quarter, setQuarter] = useState('')
+  const [auditType, setAuditType] = useState('')
+  const [noticeNo, setNoticeNo] = useState('')
+  const [authority, setAuthority] = useState('')
+  const [noticeType, setNoticeType] = useState('')
+
+  const selectedClient = MOCK_CLIENTS.find(c => c.name === client)
+  const tan = selectedClient?.tan ?? ''
+
+  // Auto-compute GST due date when return type + month change
+  const gstComputedDue = gstAutoDueDate(gstReturnType, month)
+  const effectiveDueDate = selectedCat === 'gst_filing' && gstComputedDue ? gstComputedDue : dueDate
+
+  const stepLabels: Record<number, string> = { 1: 'Select Company', 2: 'Select Category', 3: 'Fill Details' }
+  const canSubmit = !!client && !!assignTo && !!effectiveDueDate
+
+  function handleSubmit() {
+    if (!canSubmit || !selectedCat) return
+    const partial: Partial<WorkItem> & { assigned_to: string; client: string; type: WorkType; priority: Priority; due_date: string; queue: 'todo' } = {
+      type: selectedCat as WorkType,
+      client,
+      assigned_to: assignTo,
+      priority,
+      due_date: effectiveDueDate,
+      queue: 'todo',
+      description,
+      tags: [],
+      ...(selectedCat === 'gst_filing' && { gstin, form_type: gstReturnType, return_period: month }),
+      ...(selectedCat === 'tds_filing' && { form_type: tdsReturnType, quarter }),
+      ...(selectedCat === 'audit' && { audit_type: auditType }),
+      ...(selectedCat === 'notice' && { notice_no: noticeNo, authority, severity: noticeType }),
+    }
+    onSubmit(partial)
+  }
+
+  const inputBase: React.CSSProperties = {
+    background: G.canvas, border: `1px solid ${G.border}`, color: G.primary,
+    borderRadius: 10, padding: '8px 12px', width: '100%', fontSize: 12, outline: 'none',
+  }
+  const labelCls = 'block text-[10px] font-semibold uppercase tracking-wider mb-1'
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full flex flex-col"
+        style={{ maxWidth: 560, maxHeight: '88vh', background: G.white, border: `1px solid ${G.border}`, borderRadius: 16 }}>
+
+        {/* Header */}
+        <div className="px-5 py-4 flex items-center justify-between flex-shrink-0"
+          style={{ borderBottom: `1px solid ${G.border}` }}>
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              {[1, 2, 3].map(s => (
+                <div key={s} className="flex items-center gap-1">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
+                    style={{
+                      background: s < step ? '#10B981' : s === step ? G.accent : G.border,
+                      color: s <= step ? '#fff' : G.muted,
+                    }}>
+                    {s < step ? '✓' : s}
+                  </div>
+                  {s < 3 && <div className="w-6 h-px" style={{ background: s < step ? '#10B981' : G.border }} />}
+                </div>
+              ))}
+            </div>
+            <h2 className="text-sm font-bold mt-1" style={{ color: G.primary }}>
+              {stepLabels[step]}
+            </h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ background: G.canvas }}>
+            <X className="h-4 w-4" style={{ color: G.secondary }} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-4">
+
+          {/* Step 1 — Company */}
+          {step === 1 && (
+            <div className="space-y-2">
+              <p className="text-xs" style={{ color: G.secondary }}>Select the company this work item belongs to. Available modules will be shown based on the company's registrations.</p>
+              <div className="mt-2 space-y-1.5">
+                {MOCK_CLIENTS.map(c => {
+                  const active = client === c.name
+                  return (
+                    <button key={c.id} onClick={() => { setClient(c.name); setSelectedCat(''); setGstin('') }}
+                      className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all"
+                      style={{
+                        background: active ? G.accent + '10' : G.canvas,
+                        border: `1.5px solid ${active ? G.accent : G.border}`,
+                      }}>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold shrink-0"
+                        style={{ background: active ? G.accent : G.border, color: active ? '#fff' : G.secondary }}>
+                        {c.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold truncate" style={{ color: active ? G.accent : G.primary }}>{c.name}</p>
+                        <div className="flex gap-1 mt-0.5">
+                          {c.gstins?.length > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#EFF6FF', color: '#2563EB' }}>GST</span>}
+                          {c.tan && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#FFFBEB', color: '#D97706' }}>TDS</span>}
+                          <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#F0FDF4', color: '#16A34A' }}>Audit</span>
+                        </div>
+                      </div>
+                      {active && <div className="h-4 w-4 rounded-full flex items-center justify-center shrink-0" style={{ background: G.accent }}><span className="text-white text-[9px]">✓</span></div>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 — Category */}
+          {step === 2 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: G.canvas, border: `1px solid ${G.border}` }}>
+                <span className="text-[10px] font-semibold" style={{ color: G.muted }}>Company</span>
+                <span className="text-xs font-bold" style={{ color: G.primary }}>{client}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {WORK_CATEGORIES.map(cat => {
+                  const Icon = cat.icon
+                  const active = selectedCat === cat.id
+                  return (
+                    <button key={cat.id} onClick={() => setSelectedCat(cat.id as WorkType)}
+                      className="flex items-start gap-3 rounded-xl p-3 text-left transition-all"
+                      style={{
+                        background: active ? cat.color + '12' : G.canvas,
+                        border: `1.5px solid ${active ? cat.color : G.border}`,
+                      }}>
+                      <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: cat.color + '18' }}>
+                        <Icon className="h-4 w-4" style={{ color: cat.color }} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold" style={{ color: active ? cat.color : G.primary }}>{cat.label}</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: G.icon }}>{cat.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Details */}
+          {step === 3 && (
+            <div className="space-y-3">
+              {/* Company + Category summary strip */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: G.canvas, border: `1px solid ${G.border}` }}>
+                <span className="text-[10px] font-semibold" style={{ color: G.muted }}>Company</span>
+                <span className="text-xs font-bold" style={{ color: G.primary }}>{client}</span>
+                <div className="w-px h-3" style={{ background: G.border }} />
+                <span className="text-[10px] font-semibold" style={{ color: G.muted }}>Type</span>
+                <span className="text-xs font-bold" style={{ color: G.accent }}>{WORK_CATEGORIES.find(c => c.id === selectedCat)?.label}</span>
+              </div>
+
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Assign To *</label>
+                <select value={assignTo} onChange={e => setAssignTo(e.target.value)} className="appearance-none" style={inputBase}>
+                  <option value="">Select team member…</option>
+                  {MOCK_TEAM.map(u => <option key={u.id} value={u.name}>{u.name} ({u.role})</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Priority</label>
+                <select value={priority} onChange={e => setPriority(e.target.value as Priority)} className="appearance-none" style={inputBase}>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              {/* GST-specific fields */}
+              {selectedCat === 'gst_filing' && (
+                <>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>GSTIN</label>
+                    <select value={gstin} onChange={e => setGstin(e.target.value)} className="appearance-none" style={inputBase}>
+                      <option value="">Select GSTIN…</option>
+                      {(selectedClient?.gstins ?? []).map((g: string) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Return Type</label>
+                      <select value={gstReturnType} onChange={e => { setGstReturnType(e.target.value) }} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {GST_RETURN_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Month</label>
+                      <select value={month} onChange={e => setMonth(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {/* GST Auto Due Date */}
+                  <div className="rounded-xl p-3" style={{ background: gstComputedDue ? '#EFF8FF' : G.canvas, border: `1px solid ${gstComputedDue ? G.accent + '44' : G.border}` }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className={labelCls} style={{ color: gstComputedDue ? G.accent : G.icon }}>
+                        GST Filing Due Date *
+                      </label>
+                      {gstComputedDue && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: G.accent + '18', color: G.accent }}>
+                          Auto-computed
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="date"
+                      value={gstComputedDue || dueDate}
+                      onChange={e => setDueDate(e.target.value)}
+                      style={{ ...inputBase, background: gstComputedDue ? '#fff' : G.canvas }}
+                    />
+                    {gstComputedDue && (
+                      <p className="text-[10px] mt-1.5" style={{ color: G.accent }}>
+                        Standard due date for {gstReturnType} ({month}) — override if needed.
+                      </p>
+                    )}
+                    {!gstComputedDue && (
+                      <p className="text-[10px] mt-1" style={{ color: G.muted }}>Select Return Type + Month to auto-fill the standard due date.</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Non-GST due date */}
+              {selectedCat !== 'gst_filing' && (
+                <div>
+                  <label className={labelCls} style={{ color: G.icon }}>Due Date *</label>
+                  <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputBase} />
+                </div>
+              )}
+
+              {selectedCat === 'tds_filing' && (
+                <>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>TAN (Auto-filled)</label>
+                    <input value={tan} disabled style={{ ...inputBase, opacity: 0.6 }} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Return Type</label>
+                      <select value={tdsReturnType} onChange={e => setTdsReturnType(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {TDS_RETURN_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Quarter</label>
+                      <select value={quarter} onChange={e => setQuarter(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {QUARTERS.map(q => <option key={q} value={q}>{q}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
+              {selectedCat === 'audit' && (
+                <div>
+                  <label className={labelCls} style={{ color: G.icon }}>Audit Type</label>
+                  <select value={auditType} onChange={e => setAuditType(e.target.value)} className="appearance-none" style={inputBase}>
+                    <option value="">Select…</option>
+                    {AUDIT_TYPES.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+              )}
+              {selectedCat === 'notice' && (
+                <>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>Notice Number</label>
+                    <input value={noticeNo} onChange={e => setNoticeNo(e.target.value)} style={inputBase} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Authority</label>
+                      <input value={authority} onChange={e => setAuthority(e.target.value)} style={inputBase} />
+                    </div>
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Notice Type</label>
+                      <select value={noticeType} onChange={e => setNoticeType(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {NOTICE_TYPES.map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Description</label>
+                <textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} style={{ ...inputBase, resize: 'vertical' }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 pb-4 pt-3 flex items-center gap-3 flex-shrink-0" style={{ borderTop: `1px solid ${G.border}` }}>
+          {step > 1 && (
+            <button onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ background: G.canvas, border: `1px solid ${G.border}`, color: G.secondary }}>
+              ← Back
+            </button>
+          )}
+          <div className="flex-1" />
+          {step < 3 ? (
+            <button
+              disabled={step === 1 ? !client : !selectedCat}
+              onClick={() => setStep((s) => (s + 1) as 1 | 2 | 3)}
+              className="px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+              style={{ background: G.primary }}>
+              Continue →
+            </button>
+          ) : (
+            <button disabled={!canSubmit} onClick={handleSubmit}
+              className="px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+              style={{ background: G.accent }}>
+              Create Work Item
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

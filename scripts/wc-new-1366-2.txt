@@ -1,0 +1,96 @@
+function CreateModal({ onClose, onSubmit }: {
+  onClose: () => void
+  onSubmit: (item: Partial<WorkItem> & { assigned_to: string; client: string; type: WorkType; priority: Priority; due_date: string; queue: 'todo' }) => void
+}) {
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [clientId, setClientId] = useState('')
+  const [otherCompanyName, setOtherCompanyName] = useState('')
+  const [selectedCat, setSelectedCat] = useState<SelectableModule | ''>('')
+  const [assignTo, setAssignTo] = useState('')
+  const [priority, setPriority] = useState<Priority>('medium')
+  const [dueDate, setDueDate] = useState('')
+  const [taskDeadline, setTaskDeadline] = useState('')
+  const [gstFilingDueDate, setGstFilingDueDate] = useState('')
+  const [description, setDescription] = useState('')
+  const [gstin, setGstin] = useState('')
+  const [gstReturnType, setGstReturnType] = useState('')
+  const [month, setMonth] = useState('')
+  const [tdsReturnType, setTdsReturnType] = useState('')
+  const [quarter, setQuarter] = useState('')
+  const [auditType, setAuditType] = useState('')
+  const [noticeNo, setNoticeNo] = useState('')
+  const [authority, setAuthority] = useState('')
+  const [noticeType, setNoticeType] = useState('')
+
+  const isOthersCompany = clientId === 'others'
+  const selectedClient = MOCK_CLIENTS.find(c => c.id === clientId)
+  const client = isOthersCompany ? otherCompanyName.trim() : (selectedClient?.name ?? '')
+  const tan = selectedClient?.tan ?? ''
+  const eligibleModules = getEligibleModules(clientId)
+
+  const gstComputedDue = gstAutoDueDate(gstReturnType, month)
+  const displayedGstFilingDue = gstFilingDueDate || gstComputedDue
+  const isOthersModule = selectedCat === 'others'
+  const isGstModule = selectedCat === 'gst_filing'
+
+  const stepLabels: Record<number, string> = { 1: 'Select Company', 2: 'Select Module', 3: 'Task Details' }
+
+  const canContinueStep1 = !!clientId && (!isOthersCompany || !!otherCompanyName.trim())
+  const canContinueStep2 = !!selectedCat
+
+  const canSubmit = (() => {
+    if (!client || !assignTo || !selectedCat) return false
+    if (isOthersModule) return !!description.trim() && !!dueDate
+    if (isGstModule) return !!taskDeadline && !!gstReturnType && !!month
+    return !!dueDate
+  })()
+
+  function resetModuleFields() {
+    setSelectedCat('')
+    setGstin('')
+    setGstReturnType('')
+    setMonth('')
+    setTdsReturnType('')
+    setQuarter('')
+    setAuditType('')
+    setNoticeNo('')
+    setAuthority('')
+    setNoticeType('')
+    setDescription('')
+    setDueDate('')
+    setTaskDeadline('')
+    setGstFilingDueDate('')
+  }
+
+  function handleClientChange(id: string) {
+    setClientId(id)
+    resetModuleFields()
+    if (id !== 'others') setOtherCompanyName('')
+  }
+
+  function handleSubmit() {
+    if (!canSubmit || !selectedCat) return
+    const workType: WorkType = isOthersModule ? 'internal' : (selectedCat as WorkType)
+    const finalDueDate = isGstModule ? taskDeadline : dueDate
+    const finalDescription = isOthersModule
+      ? description.trim()
+      : isGstModule && displayedGstFilingDue
+        ? `${description ? description + '\n\n' : ''}GST filing due: ${displayedGstFilingDue}`
+        : description
+
+    const partial: Partial<WorkItem> & { assigned_to: string; client: string; type: WorkType; priority: Priority; due_date: string; queue: 'todo' } = {
+      type: workType,
+      client,
+      assigned_to: assignTo,
+      priority,
+      due_date: finalDueDate,
+      queue: 'todo',
+      description: finalDescription,
+      tags: isOthersModule ? ['Others'] : [],
+      ...(isGstModule && { gstin, form_type: gstReturnType, return_period: month }),
+      ...(selectedCat === 'tds_filing' && { form_type: tdsReturnType, quarter }),
+      ...(selectedCat === 'audit' && { audit_type: auditType }),
+      ...(selectedCat === 'notice' && { notice_no: noticeNo, authority, severity: noticeType }),
+    }
+    onSubmit(partial)
+  }

@@ -1,0 +1,154 @@
+          {/* Step 3 — Task form (module-specific) */}
+          {step === 3 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: G.canvas, border: `1px solid ${G.border}` }}>
+                <span className="text-[10px] font-semibold" style={{ color: G.muted }}>Company</span>
+                <span className="text-xs font-bold" style={{ color: G.primary }}>{client}</span>
+                <div className="w-px h-3" style={{ background: G.border }} />
+                <span className="text-[10px] font-semibold" style={{ color: G.muted }}>Module</span>
+                <span className="text-xs font-bold" style={{ color: G.accent }}>
+                  {isOthersModule
+                    ? OTHERS_MODULE.label
+                    : WORK_CATEGORIES.find(c => c.id === selectedCat)?.label}
+                </span>
+              </div>
+
+              {/* Others — dedicated form */}
+              {isOthersModule && (
+                <>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>Assign To *</label>
+                    <select value={assignTo} onChange={e => setAssignTo(e.target.value)} className="appearance-none" style={inputBase}>
+                      <option value="">Select team member…</option>
+                      {MOCK_TEAM.map(u => <option key={u.id} value={u.name}>{u.name} ({u.role})</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>Priority</label>
+                    <select value={priority} onChange={e => setPriority(e.target.value as Priority)} className="appearance-none" style={inputBase}>
+                      <option value="critical">Critical</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>Due Date *</label>
+                    <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputBase} />
+                  </div>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>Task Description *</label>
+                    <textarea
+                      rows={4}
+                      value={description}
+                      onChange={e => setDescription(e.target.value)}
+                      placeholder="Describe the task — what needs to be done, context, and any relevant details…"
+                      style={{ ...inputBase, resize: 'vertical' }}
+                    />
+                    {!description.trim() && (
+                      <p className="text-[10px] mt-1" style={{ color: '#DC2626' }}>Description is required for Others tasks.</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Standard module forms */}
+              {!isOthersModule && (
+                <>
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Assign To *</label>
+                <select value={assignTo} onChange={e => setAssignTo(e.target.value)} className="appearance-none" style={inputBase}>
+                  <option value="">Select team member…</option>
+                  {MOCK_TEAM.map(u => <option key={u.id} value={u.name}>{u.name} ({u.role})</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelCls} style={{ color: G.icon }}>Priority</label>
+                <select value={priority} onChange={e => setPriority(e.target.value as Priority)} className="appearance-none" style={inputBase}>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              {/* GST-specific fields */}
+              {isGstModule && (
+                <>
+                  <div>
+                    <label className={labelCls} style={{ color: G.icon }}>GSTIN</label>
+                    <select value={gstin} onChange={e => setGstin(e.target.value)} className="appearance-none" style={inputBase}>
+                      <option value="">Select GSTIN…</option>
+                      {(selectedClient?.gstins ?? []).map((g: string) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Return Type *</label>
+                      <select value={gstReturnType} onChange={e => setGstReturnType(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {GST_RETURN_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelCls} style={{ color: G.icon }}>Month *</label>
+                      <select value={month} onChange={e => setMonth(e.target.value)} className="appearance-none" style={inputBase}>
+                        <option value="">Select…</option>
+                        {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* GST statutory filing due date */}
+                  <div className="rounded-xl p-3" style={{ background: displayedGstFilingDue ? '#EFF8FF' : G.canvas, border: `1px solid ${displayedGstFilingDue ? G.accent + '44' : G.border}` }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className={labelCls} style={{ color: displayedGstFilingDue ? G.accent : G.icon }}>
+                        GST Filing Due Date
+                      </label>
+                      {gstComputedDue && !gstFilingDueDate && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: G.accent + '18', color: G.accent }}>
+                          Auto-computed
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="date"
+                      value={displayedGstFilingDue}
+                      onChange={e => setGstFilingDueDate(e.target.value)}
+                      style={{ ...inputBase, background: '#fff' }}
+                    />
+                    {displayedGstFilingDue ? (
+                      <p className="text-[10px] mt-1.5" style={{ color: G.accent }}>
+                        Statutory due date for {gstReturnType || 'return'} ({month || 'period'}) — override if needed.
+                      </p>
+                    ) : (
+                      <p className="text-[10px] mt-1" style={{ color: G.muted }}>Select Return Type + Month to auto-fill the GST filing due date.</p>
+                    )}
+                  </div>
+
+                  {/* Task deadline — separate from filing due date */}
+                  <div className="rounded-xl p-3" style={{ background: G.canvas, border: `1px solid ${G.border}` }}>
+                    <label className={labelCls} style={{ color: G.icon }}>Task Deadline *</label>
+                    <input
+                      type="date"
+                      value={taskDeadline}
+                      onChange={e => setTaskDeadline(e.target.value)}
+                      style={{ ...inputBase, background: G.white }}
+                    />
+                    <p className="text-[10px] mt-1.5" style={{ color: G.secondary }}>
+                      Internal deadline for your team to complete this task (can be before the GST filing due date).
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {/* Non-GST due date */}
+              {!isGstModule && (
+                <div>
+                  <label className={labelCls} style={{ color: G.icon }}>Due Date *</label>
+                  <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputBase} />
+                </div>
+              )}
+
+              {selectedCat === 'tds_filing' && (

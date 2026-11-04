@@ -1,0 +1,31 @@
+const WORK_CATEGORIES = [
+  { id: 'gst_filing', label: 'GST', icon: FileText, color: '#0584C7', desc: 'GSTR-1, GSTR-3B, GSTR-9, GSTR-9C', moduleKey: 'gst_enabled' as const },
+  { id: 'tds_filing', label: 'TDS', icon: ReceiptText, color: '#7C3AED', desc: '138-TDS, 140-TDS, 144-TDS, 143-TDS', moduleKey: 'tds_enabled' as const },
+  { id: 'audit', label: 'Audit', icon: Scale, color: '#0D9488', desc: 'Statutory Audit, Tax Audit, Internal Audit', moduleKey: 'audit_enabled' as const },
+  { id: 'notice', label: 'Government Notice', icon: ShieldAlert, color: '#DC2626', desc: 'GST SCN, IT Notice, Assessment' },
+  { id: 'doc_request', label: 'Document Request', icon: FolderOpen, color: '#D97706', desc: 'Collect documents from client' },
+  { id: 'client_followup', label: 'Client Follow-up', icon: Users, color: '#2563EB', desc: 'Pending responses, clarifications' },
+  { id: 'internal', label: 'Internal Task', icon: Layers, color: '#64748B', desc: 'Admin, team, or internal work' },
+]
+
+const OTHERS_MODULE = {
+  id: 'others',
+  label: 'Others',
+  icon: Layers,
+  color: '#64748B',
+  desc: 'Custom task — describe the work required',
+}
+
+type SelectableModule = WorkType | 'others'
+
+function getEligibleModules(clientId: string) {
+  if (clientId === 'others') return WORK_CATEGORIES
+  const c = MOCK_CLIENTS.find(x => x.id === clientId)
+  if (!c) return []
+  return WORK_CATEGORIES.filter(cat => {
+    if (cat.moduleKey === 'gst_enabled') return c.gst_enabled
+    if (cat.moduleKey === 'tds_enabled') return c.tds_enabled
+    if (cat.moduleKey === 'audit_enabled') return c.audit_enabled
+    return false
+  })
+}

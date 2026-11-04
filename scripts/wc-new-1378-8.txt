@@ -1,0 +1,109 @@
+// ─── Mock reference data ──────────────────────────────────────────────────────
+interface GstRegistration {
+  gstin: string
+  filingFrequency: 'Monthly' | 'Quarterly'
+  gstr1Due: string
+  gstr3bDue: string
+  gstr9Due: string
+}
+
+interface MockClient {
+  id: string
+  name: string
+  gstRegistrations: GstRegistration[]
+  tan?: string
+  gst_enabled: boolean
+  tds_enabled: boolean
+  audit_enabled: boolean
+}
+
+const MOCK_CLIENTS: MockClient[] = [
+  {
+    id: 'c1', name: 'Sunrise Textiles', tan: 'MUMS12345A',
+    gst_enabled: true, tds_enabled: true, audit_enabled: true,
+    gstRegistrations: [
+      { gstin: '27AABCS1429B1ZB', filingFrequency: 'Monthly', gstr1Due: '11', gstr3bDue: '20', gstr9Due: '31' },
+      { gstin: '27AABCS1429B1ZC', filingFrequency: 'Monthly', gstr1Due: '11', gstr3bDue: '20', gstr9Due: '31' },
+    ],
+  },
+  {
+    id: 'c2', name: 'BlueSky Software', tan: 'BLRS67890B',
+    gst_enabled: true, tds_enabled: false, audit_enabled: false,
+    gstRegistrations: [
+      { gstin: '29AADCB2230M1ZV', filingFrequency: 'Monthly', gstr1Due: '11', gstr3bDue: '20', gstr9Due: '31' },
+    ],
+  },
+  {
+    id: 'c3', name: 'Redwood Constructions', tan: 'DELS11223C',
+    gst_enabled: true, tds_enabled: true, audit_enabled: false,
+    gstRegistrations: [
+      { gstin: '07AAECR1234F1ZQ', filingFrequency: 'Quarterly', gstr1Due: '13', gstr3bDue: '22', gstr9Due: '31' },
+    ],
+  },
+  {
+    id: 'c4', name: 'Apex Auto Parts', tan: 'JAIS44556D',
+    gst_enabled: false, tds_enabled: true, audit_enabled: true,
+    gstRegistrations: [],
+  },
+  {
+    id: 'c5', name: 'Green Pharma', tan: 'AHMS77889E',
+    gst_enabled: true, tds_enabled: false, audit_enabled: true,
+    gstRegistrations: [
+      { gstin: '24AABCG9988P1Z3', filingFrequency: 'Quarterly', gstr1Due: '13', gstr3bDue: '22', gstr9Due: '31' },
+    ],
+  },
+]
+
+/** Standard defaults from client onboarding (Monthly / Quarterly) */
+const ONBOARDING_GST_DEFAULTS = {
+  Monthly: { gstr1Due: '11', gstr3bDue: '20', gstr9Due: '31' },
+  Quarterly: { gstr1Due: '13', gstr3bDue: '22', gstr9Due: '31' },
+} as const
+
+function getGstRegistration(client: MockClient | undefined, gstin: string): GstRegistration | undefined {
+  return client?.gstRegistrations.find(r => r.gstin === gstin)
+}
+
+/** Resolve filing due day from client onboarding config (fixed per company/GSTIN) */
+function getGstDueDay(config: GstRegistration, returnType: string): number | null {
+  if (returnType === 'GSTR-1') return parseInt(config.gstr1Due, 10) || null
+  if (returnType === 'GSTR-3B') return parseInt(config.gstr3bDue, 10) || null
+  if (returnType === 'GSTR-1A') {
+    // GSTR-1A: 13th for monthly filers; quarterly uses same day as GSTR-1 (13th)
+    return config.filingFrequency === 'Monthly' ? 13 : parseInt(config.gstr1Due, 10) || null
+  }
+  if (returnType === 'GSTR-9' || returnType === 'GSTR-9C') return parseInt(config.gstr9Due, 10) || 31
+  return null
+}
+
+/** Compute full due date using fixed onboarding day-of-month + return period */
+function gstFilingDueDate(
+  config: GstRegistration | undefined,
+  returnType: string,
+  periodMonth: string,
+): string {
+  if (!config || !periodMonth || !returnType) return ''
+
+  const parsed = new Date(`1 ${periodMonth}`)
+  if (isNaN(parsed.getTime())) return ''
+  const y = parsed.getFullYear()
+  const m = parsed.getMonth()
+
+  if (returnType === 'GSTR-9' || returnType === 'GSTR-9C') {
+    const day = getGstDueDay(config, returnType) ?? 31
+    return `${y + 1}-12-${String(day).padStart(2, '0')}`
+  }
+
+  const dueDay = getGstDueDay(config, returnType)
+  if (!dueDay) return ''
+
+  const nextM = (m + 1) % 12
+  const nextY = m === 11 ? y + 1 : y
+  return `${nextY}-${String(nextM + 1).padStart(2, '0')}-${String(dueDay).padStart(2, '0')}`
+}
+
+function formatDueDateLabel(iso: string): string {
+  if (!iso) return '—'
+  const d = new Date(iso + 'T00:00:00')
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+}

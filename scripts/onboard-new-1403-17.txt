@@ -1,0 +1,47 @@
+  function syncSettingsFromRegistrations() {
+    const gstEnabled = selectedRegistrations.has('GST')
+    const tdsEnabled = selectedRegistrations.has('TAN')
+    patchSettings({
+      gstEnabled,
+      tdsEnabled,
+      emailPrimary: form.pc_email || form.primaryEmail,
+      portalInviteEmail: form.pc_email || form.primaryEmail,
+      whatsappNumber: form.pc_mobile || form.primaryMobile,
+      commPortalEnabled: false,
+    })
+    setModuleDocs(prev => buildModuleDocsMap(gstEnabled, tdsEnabled, settingsProfile.auditEnabled, prev))
+  }
+
+  function handleModuleToggle(key: 'gstEnabled' | 'tdsEnabled' | 'auditEnabled', enabled: boolean) {
+    patchSettings({ [key]: enabled })
+    const next = {
+      gstEnabled: key === 'gstEnabled' ? enabled : settingsProfile.gstEnabled,
+      tdsEnabled: key === 'tdsEnabled' ? enabled : settingsProfile.tdsEnabled,
+      auditEnabled: key === 'auditEnabled' ? enabled : settingsProfile.auditEnabled,
+    }
+    setModuleDocs(prev => buildModuleDocsMap(next.gstEnabled, next.tdsEnabled, next.auditEnabled, prev))
+  }
+
+  function toggleDocRequired(module: ModuleKey, docId: string) {
+    setModuleDocs(prev => ({
+      ...prev,
+      [module]: (prev[module] ?? []).map(d =>
+        d.id === docId ? { ...d, required: !d.required } : d
+      ),
+    }))
+  }
+
+  function removeModuleDoc(module: ModuleKey, docId: string) {
+    setModuleDocs(prev => ({
+      ...prev,
+      [module]: (prev[module] ?? []).filter(d => d.id !== docId),
+    }))
+  }
+
+  function addModuleDoc(module: ModuleKey, name: string) {
+    if (!name.trim()) return
+    setModuleDocs(prev => ({
+      ...prev,
+      [module]: [...(prev[module] ?? []), { id: uid(), name: name.trim(), required: true }],
+    }))
+  }

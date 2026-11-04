@@ -1,0 +1,70 @@
+          {/* Alerts + Upcoming Deadlines — merged card with scrollbar */}
+          <div
+            className="rounded-2xl border flex flex-col"
+            style={{ background: G.white, borderColor: G.border, boxShadow: '0 1px 3px rgba(15,23,42,0.06)', maxHeight: 420 }}
+          >
+            {/* Card header */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: `1px solid ${G.border}` }}>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <AlertTriangle className="h-4 w-4" style={{ color: '#EF4444' }} />
+                  <span className="text-sm font-semibold" style={{ color: G.primary }}>Alerts</span>
+                  {alertCount > 0 && (
+                    <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold" style={{ background: '#FEF2F2', color: '#EF4444' }}>{alertCount}</span>
+                  )}
+                </div>
+                <div className="h-3.5 w-px" style={{ background: G.border }} />
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" style={{ color: '#F59E0B' }} />
+                  <span className="text-sm font-semibold" style={{ color: G.primary }}>Deadlines</span>
+                  {deadlineCount > 0 && (
+                    <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold" style={{ background: '#FFFBEB', color: '#D97706' }}>{deadlineCount}</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/workcenter')}
+                className="text-xs font-medium"
+                style={{ color: G.secondary }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = G.primary }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = G.secondary }}
+              >
+                View all
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div
+              className="flex-1 overflow-y-auto px-4 pb-4 min-h-0"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: `${G.border} transparent` }}
+            >
+              {/* Alerts section */}
+              <div className="flex items-center gap-2 mt-3 mb-1">
+                <div className="h-2 w-2 rounded-full shrink-0" style={{ background: '#EF4444' }} />
+                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#EF4444' }}>Alerts</span>
+              </div>
+              <ul>
+                {!dashData?.recent_alerts?.length ? (
+                  <Empty icon={CheckCircle2} text="All clear — no alerts" />
+                ) : dashData.recent_alerts.map((alert: any) => (
+                  <AlertItem key={alert.id} alert={alert} />
+                ))}
+              </ul>
+
+              {/* Divider */}
+              <div className="my-3" style={{ borderTop: `1px dashed ${G.border}` }} />
+
+              {/* Upcoming Deadlines section */}
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-2 w-2 rounded-full shrink-0" style={{ background: '#F59E0B' }} />
+                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#D97706' }}>Upcoming Deadlines</span>
+              </div>
+              <ul>
+                {!dashData?.upcoming_deadlines?.length ? (
+                  <Empty icon={CheckCircle2} text="No upcoming deadlines" />
+                ) : dashData.upcoming_deadlines.map((task: any) => (
+                  <DeadlineItem key={task.id} task={task} onClick={() => navigate('/workcenter')} />
+                ))}
+              </ul>
+            </div>
+          </div>

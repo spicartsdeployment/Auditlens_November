@@ -1,0 +1,28 @@
+                  {/* GST filing due date — fixed from client onboarding */}
+                  <div className="rounded-xl p-3" style={{ background: fixedGstFilingDue ? '#EFF8FF' : G.canvas, border: `1px solid ${fixedGstFilingDue ? G.accent + '44' : G.border}` }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className={labelCls} style={{ color: fixedGstFilingDue ? G.accent : G.icon }}>
+                        GST Filing Due Date
+                      </label>
+                      {fixedGstFilingDue && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: G.accent + '18', color: G.accent }}>
+                          From onboarding
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className="rounded-lg px-3 py-2 text-sm font-semibold tabular-nums"
+                      style={{ background: G.white, border: `1px solid ${G.border}`, color: fixedGstFilingDue ? G.primary : G.muted }}
+                    >
+                      {fixedGstFilingDue ? formatDueDateLabel(fixedGstFilingDue) : '—'}
+                    </div>
+                    {fixedGstFilingDue && selectedGstReg ? (
+                      <p className="text-[10px] mt-1.5" style={{ color: G.accent }}>
+                        Fixed {selectedGstReg.filingFrequency.toLowerCase()} due date for {gstReturnType} ({month}) — set during client onboarding.
+                      </p>
+                    ) : (
+                      <p className="text-[10px] mt-1" style={{ color: G.muted }}>
+                        Select GSTIN, Return Type, and Month to show the filing due date from client onboarding.
+                      </p>
+                    )}
+                  </div>
