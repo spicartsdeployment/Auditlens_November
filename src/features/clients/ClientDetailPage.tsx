@@ -9,16 +9,7 @@ import { clientsApi } from '@/shared/api/clients'
 import { Avatar } from '@/shared/components/Avatar'
 import { SkeletonCard } from '@/shared/components/Skeleton'
 import { formatDistanceToNow } from 'date-fns'
-
-// ── Gray palette ─────────────────────────────────────────────
-const G = {
-  canvas:    '#F5F2EC',
-  white:     '#FFFFFF',
-  border:    '#E4DFD6',
-  icon:      '#8A8D91',
-  secondary: '#5C5F63',
-  primary:   '#2B2F33',
-} as const
+import { G } from '@/shared/components/GrayKpi'
 
 // ── Section wrapper ──────────────────────────────────────────
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
@@ -106,7 +97,7 @@ export function ClientDetailPage() {
   if (!client) return <p className="p-6" style={{ color: '#B42318' }}>Client not found</p>
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-4" style={{ background: G.canvas }}>
+    <div className="p-4 md:p-6 w-full min-h-full space-y-4" style={{ background: G.canvas }}>
 
       {/* ── Page header ─────────────────────────────────────── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -150,7 +141,7 @@ export function ClientDetailPage() {
 
       {/* ── 1. Company Information ──────────────────────────── */}
       <Section title="Company Information" icon={Building2}>
-        <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <dl className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
           <InfoRow label="Legal Name" value={client.legal_name} />
           <InfoRow label="Trade Name" value={client.trade_name} />
           <InfoRow label="PAN" value={client.pan} mono />

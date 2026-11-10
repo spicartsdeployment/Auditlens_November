@@ -32,6 +32,7 @@ import { MOCK_THREADS, MOCK_TASKS } from '@/mock/data'
 import { DashboardRightPanel } from './DashboardRightPanel'
 import { DashboardPersonalCard } from './DashboardPersonalCard'
 import { useApprovalStore } from '@/shared/hooks/useApprovalStore'
+import { G } from '@/shared/components/GrayKpi'
 
 const MOCK_INBOX = [
   { id: 1, from: 'Sunrise Textiles', snippet: 'Audit documents pending — please upload balance sheet', channel: 'whatsapp', time: '2h', unread: true },
@@ -42,16 +43,6 @@ const MOCK_INBOX = [
 const channelDot: Record<string, string> = {
   whatsapp: '#2F6B4F', internal: '#2B2F33', email: '#3B6B8C', portal: '#6E7176',
 }
-
-// ─── Gray palette constants ────────────────────────────────
-const G = {
-  canvas:  '#F5F2EC',   // R1 — app background
-  white:   '#FFFFFF',   // elevated cards
-  border:  '#E4DFD6',   // R2 — dividers
-  muted:   '#8A8D91',   // R3 — decorative icons / inactive
-  secondary:'#5C5F63',  // R4 — secondary text / timestamps
-  primary: '#2B2F33',   // R5 — headings / numbers
-} as const
 
 // ─── Card wrapper ──────────────────────────────────────────
 function Card({ children, className = '', onClick }: {

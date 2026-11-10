@@ -5,15 +5,12 @@ import {
 } from 'date-fns'
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, CheckCircle2, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { G } from '@/shared/components/GrayKpi'
 import { useAuthStore } from '@/shared/hooks/useAuthStore'
 import {
   REMINDER_TYPES, useCalendarStore, visibleEvents, type CalendarEvent, type ReminderType,
 } from '@/shared/hooks/useCalendarStore'
 
-const G = {
-  canvas: '#F5F2EC', white: '#FFFFFF', border: '#E4DFD6', muted: '#8A8D91',
-  secondary: '#5C5F63', primary: '#2B2F33',
-} as const
 
 const emptyForm = {
   title: '', description: '', date: format(new Date(), 'yyyy-MM-dd'),

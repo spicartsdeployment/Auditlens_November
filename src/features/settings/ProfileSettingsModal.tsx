@@ -2,16 +2,7 @@ import { useState } from 'react'
 import { X, User, Lock, Monitor, Bell } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/shared/hooks/useAuthStore'
-
-const G = {
-  canvas: '#F5F2EC',
-  white: '#FFFFFF',
-  border: '#E4DFD6',
-  muted: '#8A8D91',
-  secondary: '#5C5F63',
-  primary: '#2B2F33',
-  accent: '#3D6B5E',
-} as const
+import { G } from '@/shared/components/GrayKpi'
 
 type TabId = 'profile' | 'password' | 'sessions' | 'notifications'
 

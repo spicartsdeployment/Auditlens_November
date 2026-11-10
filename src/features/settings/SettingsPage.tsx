@@ -5,6 +5,7 @@ import { mockComplianceApi } from '@/mock/api'
 import { toast } from 'sonner'
 import { G, PageHeader, DarkBtn, OutlineBtn, ContentCard } from '@/shared/components/GrayKpi'
 import { FontPreferencePanel } from './FontPreferencePanel'
+import { ColorPickerPanel } from './ColorPickerPanel'
 import { usePermission } from '@/shared/hooks/usePermission'
 
 function UsageBar({ used, max, label }: { used: number; max: number; label: string }) {
@@ -35,15 +36,20 @@ export function SettingsPage() {
   const daysToRenewal = renewalDate ? differenceInDays(renewalDate, new Date()) : null
 
   return (
-    <div className="p-4 md:p-6 max-w-[1200px] mx-auto" style={{ background: G.canvas }}>
+    <div className="p-4 md:p-6 w-full min-h-full flex flex-col" style={{ background: G.canvas }}>
       <PageHeader title="Settings" sub={article ? 'Personal preferences' : 'Firm settings, subscription, and preferences'} />
 
       {article && (
-        <div className="max-w-2xl"><FontPreferencePanel /></div>
+        <div className="flex-1 flex flex-col gap-5">
+          <ColorPickerPanel />
+          <FontPreferencePanel />
+        </div>
       )}
 
       {!article && (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="flex-1 flex flex-col gap-5">
+          <ColorPickerPanel />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 shrink-0">
         {/* LEFT: Subscription + Firm settings */}
         <div className="lg:col-span-2 space-y-5">
 
@@ -177,8 +183,9 @@ export function SettingsPage() {
               </ul>
             </div>
           </ContentCard>
-          <FontPreferencePanel />
         </div>
+      </div>
+          <FontPreferencePanel />
       </div>
       )}
     </div>

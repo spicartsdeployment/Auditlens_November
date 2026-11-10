@@ -319,3 +319,21 @@
   border-radius: 9999px;
   background: var(--color-sidebar-text);
 }
+
+.theme-color-input {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.theme-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+.theme-color-input::-webkit-color-swatch {
+  border: 1px solid rgba(43, 47, 51, 0.12);
+  border-radius: 16px;
+}
+.theme-color-input::-moz-color-swatch {
+  border: 1px solid rgba(43, 47, 51, 0.12);
+  border-radius: 16px;
+}

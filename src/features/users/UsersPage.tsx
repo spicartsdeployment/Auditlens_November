@@ -20,15 +20,7 @@ import { usePermission } from '@/shared/hooks/usePermission'
 import { MODULE_SCREENS, useApprovalStore } from '@/shared/hooks/useApprovalStore'
 import type { User, PermissionOverride } from '@/shared/types'
 import { useSearchParams } from 'react-router-dom'
-
-const G = {
-  canvas:    '#F5F2EC',
-  white:     '#FFFFFF',
-  border:    '#E4DFD6',
-  icon:      '#8A8D91',
-  secondary: '#5C5F63',
-  primary:   '#2B2F33',
-} as const
+import { G } from '@/shared/components/GrayKpi'
 
 const createSchema = z.object({
   full_name:        z.string().min(1, 'Name is required'),

@@ -4,16 +4,7 @@ import { toast } from 'sonner'
 import { Settings, ChevronDown, Plus, X, Check, Info } from 'lucide-react'
 import { cn } from '@/shared/components/cn'
 import { MOCK_CLIENTS, MOCK_USERS, MOCK_TDS_RETURNS } from '@/mock/data'
-
-const G = {
-  canvas:    '#F5F2EC',
-  white:     '#FFFFFF',
-  border:    '#E4DFD6',
-  muted:     '#8A8D91',
-  secondary: '#5C5F63',
-  primary:   '#2B2F33',
-  accent:    '#3D6B5E',
-} as const
+import { G } from '@/shared/components/GrayKpi'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

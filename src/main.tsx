@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { router } from './app/router'
 import { Providers } from './app/providers'
+import { initPalette } from '@/shared/hooks/usePaletteStore'
 import './styles/global.css'
+
+initPalette()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

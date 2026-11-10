@@ -4,17 +4,18 @@
 import { cn } from './cn'
 
 export const G = {
-  canvas:     '#F5F2EC',
-  white:      '#FFFFFF',
-  border:     '#E4DFD6',
-  icon:       '#8A8D91',
-  muted:      '#8A8D91',
-  secondary:  '#5C5F63',
-  primary:    '#2B2F33',
-  brand:      '#3D6B5E',
-  brandHover: '#32574C',
-  brandSoft:  '#EEF4F2',
-  graphite:   '#4A4E53',
+  canvas:     'var(--color-bg)',
+  white:      'var(--color-surface)',
+  border:     'var(--color-border)',
+  icon:       'var(--color-text-muted)',
+  muted:      'var(--color-text-muted)',
+  secondary:  'var(--color-text-secondary)',
+  primary:    'var(--color-text-primary)',
+  brand:      'var(--color-brand)',
+  brandHover: 'var(--color-brand-hover)',
+  brandSoft:  'var(--color-brand-soft)',
+  graphite:   'var(--color-neutral-700)',
+  accent:     'var(--color-brand)',
 } as const
 
 /** White KPI metric card — no color tints */

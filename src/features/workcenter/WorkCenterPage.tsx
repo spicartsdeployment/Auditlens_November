@@ -134,7 +134,7 @@ const RAW_ITEMS: WorkItem[] = [
   {
     id: 'w1', type: 'notice', title: 'GST SCN — Excess ITC Claim FY 2024-25',
     client: 'Sunrise Textiles', priority: 'critical', score: 98, due_date: '2026-06-26',
-    days_remaining: 1, assigned_to: 'Rohan Verma', assigned_by: 'Priya Sharma', progress: 35, open_queries: 2,
+    days_remaining: 1, assigned_to: 'Rohan Verma', assignees: ['Rohan Verma', 'Sneha Iyer'], lead_assignee: 'Rohan Verma', assigned_by: 'Priya Sharma', progress: 35, open_queries: 2,
     pending_docs: 3, status: 'Response Preparation', queue: 'in_progress', remarks: 'Bank statement pending from client.',
     tags: ['GST', 'SCN'], description: 'Show Cause Notice from GST department regarding excess ITC claimed in FY 2024-25. Response with supporting documents required.',
     notice_no: 'SCN/GST/2026/1423', authority: 'GST Department — Delhi', severity: 'critical', workflow_stage: 'Preparation',
@@ -150,7 +150,7 @@ const RAW_ITEMS: WorkItem[] = [
   {
     id: 'w3', type: 'tds_filing', title: 'TDS 140-TDS — Q4 FY 2025-26',
     client: 'Redwood Constructions', priority: 'critical', score: 88, due_date: '2026-06-27',
-    days_remaining: 2, assigned_to: 'Rohan Verma', assigned_by: 'Priya Sharma', progress: 20, open_queries: 0,
+    days_remaining: 2, assigned_to: 'Rohan Verma', assignees: ['Rohan Verma', 'Priya Sharma'], lead_assignee: 'Rohan Verma', assigned_by: 'Priya Sharma', progress: 20, open_queries: 0,
     pending_docs: 5, status: 'Document Collection', queue: 'todo', remarks: 'Supporting documents not received.',
     tags: ['140-TDS', 'Q4'], description: 'Q4 TDS return — challan details and deductee information pending from client.',
     quarter: 'Q4 FY 2025-26', form_type: '140-TDS (26Q)',
@@ -174,7 +174,7 @@ const RAW_ITEMS: WorkItem[] = [
   {
     id: 'w6', type: 'audit', title: 'Statutory Audit FY 2025-26',
     client: 'Green Pharma', priority: 'high', score: 71, due_date: '2026-06-30',
-    days_remaining: 5, assigned_to: 'Rohan Verma', assigned_by: 'Priya Sharma', progress: 45, open_queries: 3,
+    days_remaining: 5, assigned_to: 'Rohan Verma', assignees: ['Rohan Verma', 'Sneha Iyer'], lead_assignee: 'Rohan Verma', assigned_by: 'Priya Sharma', progress: 45, open_queries: 3,
     pending_docs: 8, status: 'Fieldwork', queue: 'in_progress',
     tags: ['Statutory Audit', 'FY 25-26'], description: 'Statutory audit fieldwork in progress. Risk assessment and working papers pending.',
     audit_type: 'Statutory Audit',
@@ -306,12 +306,69 @@ function PriorityDot({ priority }: { priority: Priority }) {
     style={{ background: PRIORITY_CFG[priority].dot }} />
 }
 
+function nameInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  const first = parts[0]?.[0] ?? ''
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+  return `${first}${last}`.toUpperCase()
+}
+
 function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'xs' }) {
-  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  const initials = nameInitials(name)
   return (
     <div className={cn('rounded-full flex items-center justify-center font-bold shrink-0', size === 'xs' ? 'h-5 w-5 text-[8px]' : 'h-6 w-6 text-[9px]')}
-      style={{ background: '#3D6B5E', color: '#fff' }}>
+      style={{ background: '#3D6B5E', color: '#fff' }}
+      title={name}
+    >
       {initials}
+    </div>
+  )
+}
+
+const AVATAR_TONES = ['#3D6B5E', '#4A4E53', '#3B6B8C', '#2B2F33', '#5C5F63']
+
+function avatarTone(name: string) {
+  let n = 0
+  for (let i = 0; i < name.length; i++) n = (n + name.charCodeAt(i) * (i + 1)) % AVATAR_TONES.length
+  return AVATAR_TONES[n]
+}
+
+function itemAssigneeNames(item: WorkItem) {
+  const { lead, others } = extraAssignees(item)
+  return [...new Set([lead, ...others].filter(Boolean))]
+}
+
+function AssigneeAvatars({ item, size = 'sm' }: { item: WorkItem; size?: 'sm' | 'xs' }) {
+  const names = itemAssigneeNames(item)
+  if (names.length === 0) {
+    return <span className="text-[11px]" style={{ color: G.icon }}>—</span>
+  }
+  const dim = size === 'xs' ? 'h-6 w-6 text-[8px]' : 'h-7 w-7 text-[10px]'
+  return (
+    <div className="flex items-center" role="list" aria-label={`Assigned to ${names.join(', ')}`}>
+      {names.map((name, i) => (
+        <div
+          key={name}
+          role="listitem"
+          className="relative group"
+          style={{ marginLeft: i === 0 ? 0 : -8, zIndex: names.length - i }}
+        >
+          <div
+            className={cn('rounded-full flex items-center justify-center border-2 border-white shrink-0 font-bold leading-none tracking-tight', dim)}
+            style={{ background: avatarTone(name), color: '#fff' }}
+            title={name}
+            aria-label={name}
+          >
+            {nameInitials(name)}
+          </div>
+          <span
+            className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+6px)] z-40 hidden group-hover:block whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-semibold text-white pointer-events-none shadow-sm"
+            style={{ background: G.primary }}
+          >
+            {name}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }
@@ -376,14 +433,7 @@ function WorkCard({ item, onClick, assignedBy }: { item: WorkItem; onClick: () =
         <ProgressBar pct={item.progress} />
       </div>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 min-w-0" title={[extraAssignees(item).lead, ...extraAssignees(item).others].join(', ')}>
-          <Avatar name={extraAssignees(item).lead} size="xs" />
-          <span className="text-[9px] truncate" style={{ color: G.secondary }}>{extraAssignees(item).lead}</span>
-          {extraAssignees(item).others.slice(0, 2).map(n => <Avatar key={n} name={n} size="xs" />)}
-          {extraAssignees(item).others.length > 2 && (
-            <span className="text-[9px] font-bold" style={{ color: G.icon }}>+{extraAssignees(item).others.length - 2}</span>
-          )}
-        </div>
+        <AssigneeAvatars item={item} size="xs" />
         <div className="flex items-center gap-1.5 shrink-0">
           <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
             style={{ background: G.canvas, border: `1px solid ${G.border}`, color: G.secondary }}>{reviewLabel(item)}</span>
@@ -404,9 +454,6 @@ function WorkRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
   const cfg = QUEUE_CFG[item.queue]
   const QIcon = cfg.icon
   const p = PRIORITY_CFG[item.priority]
-  const extras = extraAssignees(item)
-  const assignedNames = [extras.lead, ...extras.others].filter(Boolean)
-
   return (
     <tr
       onClick={onClick}
@@ -443,8 +490,8 @@ function WorkRow({ item, onClick }: { item: WorkItem; onClick: () => void }) {
           <span className="text-[9px] tabular-nums" style={{ color: G.icon }}>{item.progress}%</span>
         </div>
       </td>
-      <td className="px-3 py-2.5">
-        <p className="text-[11px] truncate" title={assignedNames.join(', ')} style={{ color: G.secondary }}>{assignedNames.join(', ') || '—'}</p>
+      <td className="px-3 py-2.5 relative overflow-visible">
+        <AssigneeAvatars item={item} />
       </td>
       <td className="px-3 py-2.5 text-[11px]" style={{ color: G.secondary }} title={item.remarks || ''}>
         {item.remarks || (pendingFromClient(item) > 0 ? `Pending from Client · ${pendingFromClient(item)}` : '—')}
@@ -509,9 +556,9 @@ function WorkListView({ items, onItemClick }: {
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden"
+    <div className="rounded-2xl overflow-visible"
       style={{ background: G.white, border: `1px solid ${G.border}`, boxShadow: '0 1px 3px rgba(43,47,51,0.06)' }}>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-visible">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr style={{ background: G.canvas }}>
@@ -1952,10 +1999,7 @@ function ClientGroupView({ items, onItemClick }: { items: WorkItem[]; onItemClic
                       </td>
                       <td className="px-4 py-2.5"><TypeChip type={item.type} /></td>
                       <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-1.5">
-                          <Avatar name={item.assigned_to} size="xs" />
-                          <span style={{ color: G.secondary }}>{item.assigned_to}</span>
-                        </div>
+                        <AssigneeAvatars item={item} size="xs" />
                       </td>
                       <td className="px-4 py-2.5">
                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"

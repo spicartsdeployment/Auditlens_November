@@ -13,17 +13,7 @@ import {
 } from 'lucide-react'
 import { MOCK_USERS } from '@/mock/data'
 import type { User } from '@/shared/types'
-
-// ─── Design tokens ───────────────────────────────────────────────────────────
-const G = {
-  canvas: '#F5F2EC',
-  white: '#FFFFFF',
-  border: '#E4DFD6',
-  muted: '#8A8D91',
-  secondary: '#5C5F63',
-  primary: '#2B2F33',
-  accent: '#3D6B5E',
-} as const
+import { G } from '@/shared/components/GrayKpi'
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 const ORG_TYPES = [

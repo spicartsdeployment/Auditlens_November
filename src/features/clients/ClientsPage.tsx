@@ -133,7 +133,7 @@ export function ClientsPage() {
   })
 
   return (
-    <div className="p-4 md:p-6 max-w-[1400px] mx-auto" style={{ background: G.canvas }}>
+    <div className="p-4 md:p-6 w-full min-h-full" style={{ background: G.canvas }}>
       <PageHeader title="Client Management" sub={`${(clients as Client[]).filter(c => c.is_active).length} active clients`}>
         <DarkBtn onClick={() => navigate('/clients/new')}><Plus className="h-3.5 w-3.5" />Onboard Client</DarkBtn>
         <DarkBtn onClick={() => toast.info('Import client template — upload CSV from Download Templates')}><Plus className="h-3.5 w-3.5" />Import Client Template</DarkBtn>
@@ -181,7 +181,7 @@ export function ClientsPage() {
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <GrayKpi label="Total Clients" value={(clients as Client[]).length} icon={Briefcase} sub="All firms" />
         <GrayKpi label="Active" value={(clients as Client[]).filter(c => c.is_active).length} icon={CheckCircle2} sub="Currently engaged" />
         <GrayKpi label="Inactive" value={(clients as Client[]).filter(c => !c.is_active).length} icon={AlertTriangle} sub="On hold" />

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { applyFont, useFontStore } from '@/shared/hooks/useFontStore'
+import { applyThemeColors, usePaletteStore } from '@/shared/hooks/usePaletteStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -12,9 +13,11 @@ const queryClient = new QueryClient({
   },
 })
 
-function FontHydrate() {
+function AppearanceHydrate() {
   const fontId = useFontStore(s => s.fontId)
+  const colors = usePaletteStore(s => s.colors)
   useEffect(() => { applyFont(fontId) }, [fontId])
+  useEffect(() => { applyThemeColors(colors) }, [colors])
   return null
 }
 
@@ -26,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     : '"Inter", system-ui, sans-serif'
   return (
     <QueryClientProvider client={queryClient}>
-      <FontHydrate />
+      <AppearanceHydrate />
       {children}
       <Toaster
         position="top-right"
